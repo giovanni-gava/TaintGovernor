@@ -1,0 +1,27 @@
+# ----------------------------------------
+# Go / Kubebuilder / Operator projects
+# ----------------------------------------
+# Binaries
+/bin/
+/dist/
+/build/
+
+# Output from `make test`
+*.out
+cover.*
+
+# Editor / OS artifacts
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tmp
+*.log
+
+# Dependency directories (Go < 1.17) – kept for legacy tools
+/vendor/
+
+# Kubebuilder cache & generated
+config/*.yaml
+controller-gen.*
+testbin/
