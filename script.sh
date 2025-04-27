@@ -1,69 +1,111 @@
-#!/bin/bash
+#!/usr/bin/env bash
+#
+# create-structure.sh — bootstrap idempotente para o projeto TaintGovernor
+# Uso: ./create-structure.sh [--dry-run]
 
 set -euo pipefail
 
-# Diretório base (assume que você já está dentro do repositório clonado)
-BASE_DIR="$(pwd)"
+#####################################################################
+# Configuração
+#####################################################################
 
-echo "🔧 Criando estrutura inicial do projeto TaintGovernor em: $BASE_DIR"
+BASE_DIR="$(pwd)"           # diretório de trabalho (repo root)
+DRY_RUN=false               # se true, não cria nada
 
-# Função para criar diretórios se não existirem
+# Parse de argumentos simples
+if [[ "${1:-}" == "--dry-run" ]]; then
+  DRY_RUN=true
+fi
+
+# Diretórios que precisamos
+DIRECTORIES=(
+  "api/v1alpha1"
+  "cmd"
+  "config/crd"
+  "config/default"
+  "config/manager"
+  "config/rbac"
+  "config/samples"
+  "controllers"
+  "charts/taintgovernor"
+  "docs"
+  "hack"
+  "pkg/utils"
+  "scripts"
+  ".github/ISSUE_TEMPLATE"
+  ".github/workflows"
+)
+
+# Arquivos vazios que valerá a pena comitar já
+FILES=(
+  "README.md"
+  "LICENSE"
+  ".gitignore"
+  "CONTRIBUTING.md"
+  "Makefile"
+  "Dockerfile"
+  "go.mod"
+  "go.sum"
+  # “stubs” Go
+  "api/v1alpha1/taintpolicy_types.go"
+  "api/v1alpha1/zz_generated.deepcopy.go"
+  "controllers/taintpolicy_controller.go"
+  "cmd/manager.go"
+  "pkg/utils/helpers.go"
+)
+
+#####################################################################
+# Funções utilitárias
+#####################################################################
+
+log()  { printf ' • %s\n' "$1"; }
+info() { printf '\n==> %s\n' "$1"; }
+
 create_dir() {
-    if [ ! -d "$1" ]; then
-        mkdir -p "$1"
-        echo "📁 Criado diretório: $1"
-    else
-        echo "✅ Diretório já existe: $1"
-    fi
+  local dir="$1"
+  if [[ -d "$dir" ]]; then
+    log "Diretório já existe: $dir"
+  else
+    $DRY_RUN || mkdir -p "$dir"
+    log "Criado diretório:  $dir"
+  fi
 }
 
-# Função para criar arquivos se não existirem
 create_file() {
-    if [ ! -f "$1" ]; then
-        touch "$1"
-        echo "📝 Criado arquivo: $1"
-    else
-        echo "✅ Arquivo já existe: $1"
-    fi
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    log "Arquivo já existe:  $file"
+  else
+    $DRY_RUN || touch "$file"
+    log "Criado arquivo:    $file"
+  fi
 }
 
-# Estruturas principais
-create_dir "api/v1alpha1"
-create_dir "cmd"
-create_dir "config/{crd,default,manager,rbac,samples}"
-create_dir "controllers"
-create_dir "charts/taintgovernor"
-create_dir "docs"
-create_dir "hack"
-create_dir "pkg/utils"
-create_dir "scripts"
-create_dir ".github/ISSUE_TEMPLATE"
-create_dir ".github/workflows"
+#####################################################################
+# Execução
+#####################################################################
 
-# Arquivos importantes
-create_file "README.md"
-create_file "LICENSE"
-create_file "Dockerfile"
-create_file "Makefile"
-create_file ".gitignore"
-create_file "CONTRIBUTING.md"
-create_file "go.mod"
-create_file "go.sum"
+info "Inicializando estrutura em: $BASE_DIR"
+$DRY_RUN && log "(modo dry-run – nada será criado)"
 
-# Arquivos Go iniciais
-create_file "api/v1alpha1/taintpolicy_types.go"
-create_file "api/v1alpha1/zz_generated.deepcopy.go"
-create_file "controllers/taintpolicy_controller.go"
-create_file "cmd/manager.go"
-create_file "pkg/utils/helpers.go"
+info "Criando diretórios:"
+for dir in "${DIRECTORIES[@]}"; do
+  create_dir "$dir"
+done
 
-# Templates do GitHub
-cat <<EOF > .github/ISSUE_TEMPLATE/bug_report.md
+info "Criando arquivos vazios:"
+for file in "${FILES[@]}"; do
+  create_file "$file"
+done
+
+info "Gerando templates do GitHub (bug / feature / PR)"
+TEMPLATE_DIR=".github/ISSUE_TEMPLATE"
+create_file "${TEMPLATE_DIR}/bug_report.md"
+cat > "${TEMPLATE_DIR}/bug_report.md" <<'EOF'
 ---
 name: Bug Report
 about: Report a problem with TaintGovernor
 ---
-
 **Describe the bug**
 A clear and concise description of what the bug is.
 
@@ -75,12 +117,12 @@ What you expected to happen.
 - TaintGovernor version:
 EOF
 
-cat <<EOF > .github/ISSUE_TEMPLATE/feature_request.md
+create_file "${TEMPLATE_DIR}/feature_request.md"
+cat > "${TEMPLATE_DIR}/feature_request.md" <<'EOF'
 ---
 name: Feature Request
 about: Suggest an idea for TaintGovernor
 ---
-
 **Describe the feature**
 A clear and concise description of what you want to happen.
 
@@ -88,23 +130,22 @@ A clear and concise description of what you want to happen.
 Why is this feature important?
 EOF
 
-cat <<EOF > .github/PULL_REQUEST_TEMPLATE.md
+create_file ".github/PULL_REQUEST_TEMPLATE.md"
+cat > ".github/PULL_REQUEST_TEMPLATE.md" <<'EOF'
 ## Description
-
-Please include a summary of the change and which issue is fixed.
+Summary of the change and which issue is fixed.
 
 ## Type of change
-
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Checklist
-
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] I have added necessary documentation (if appropriate)
+- [ ] Tests added/updated
+- [ ] Documentation added/updated
 EOF
 
-echo "🎯 Estrutura inicial criada com sucesso!"
+info "✅ Estrutura concluída."
+$DRY_RUN && info "(nenhuma alteração física foi feita — dry-run)"
 
