@@ -1,0 +1,50 @@
+name: "🐛 Bug Report"
+description: Report something that isn’t working as expected
+title: "[Bug] <short description>"
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug!  
+        Fill out all required sections so we can help quickly.
+  - type: input
+    id: version
+    attributes:
+      label: TaintGovernor version
+      placeholder: "e.g. v0.2.1"
+    validations:
+      required: true
+  - type: input
+    id: k8s-version
+    attributes:
+      label: Kubernetes version
+      placeholder: "e.g. v1.29.3"
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the issue **clearly** and **concisely**.
+      placeholder: Steps to reproduce, logs, screenshots…
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      render: markdown
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste only the lines that show the problem.
+      render: text
+  - type: dropdown
+    id: willingness
+    attributes:
+      label: Are you willing to submit a PR to fix this?
+      options: ["Yes", "Maybe – guidance needed", "No"]
